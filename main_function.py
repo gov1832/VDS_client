@@ -25,19 +25,31 @@ class main_function(QWidget):
         self.btn_event()
 
         # value setting
-        self.local_ip = '127.000.000.001'
-        self.center_ip = '123.456.789.123'
+        self.local_ip = None
+        self.server_ip = None
         self.frame_number_set = None
         self.connect_time = None
+        self.lane_num = None
+        self.collect_cycle = None
+        self.category_num = None
+        self.value_setting()
+
+    def value_setting(self):
+        self.local_ip = '123.456.789.123'
+        self.server_ip = '127.000.000.001'
+        self.lane_num = 2
+        self.collect_cycle = 30
+        self.category_num = 10
 
     def time_bar_timeout(self):
         now = time.localtime()
-        self.ui.time_bar.setText(str("%04d/%02d/%02d %02d:%02d:%02d" % (now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec)))
+        self.ui.time_bar.setText(str("%04d/%02d/%02d %02d:%02d:%02d" %
+                                     (now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec)))
 
     def set_ui(self):
         # socket
         self.ui.sock_ip_input.setText("127.0.0.1")
-        self.ui.sock_port_input.setText("3333")
+        self.ui.sock_port_input.setText("30100")
 
         self.ui.op_FF_btn.setEnabled(False)
         self.ui.op_FE_btn.setEnabled(False)
@@ -166,132 +178,176 @@ class main_function(QWidget):
             msg_op = d_recv_msg[43]
             sender_ip = d_recv_msg[0:15]
             destination_ip = d_recv_msg[16:31]
-
+            self.server_ip = sender_ip
 
             # 수신메시지의 목적지IP == local IP
             if destination_ip == self.local_ip:
                 print("RX_msg: /", recv_msg.decode('utf-16'), "/")
                 if msg_op == chr(0xFF):
-                    self.sock.send_FF_res_msg(self.local_ip, sender_ip)
-                    self.connect_time = time.time()
+                    # self.sock.send_FF_res_msg(self.local_ip, sender_ip)
+                    # self.connect_time = time.time()
+                    print('0xFF response')
                 elif msg_op == chr(0xFE):
-                    self.sock.send_FE_res_msg(self.local_ip, sender_ip)
+                    self.sock.send_FE_msg(self.local_ip, sender_ip)
                 elif msg_op == chr(0x01):
-                    self.device_sync(d_recv_msg)
+                    # self.device_sync(msg_op, d_recv_msg)
                     # self.sock.send_01_res_msg(self.local_ip, sender_ip)
-                    print("not ack")
+                    print("0x01 ")
                 elif msg_op == chr(0x04):
-                    self.sock.send_04_res_msg(self.local_ip, sender_ip, self.frame_number_set)
+                    # self.sock.send_04_res_msg(self.local_ip, sender_ip, self.frame_number_set)
+                    print('0x04 response')
                 elif msg_op == chr(0x05):
-                    self.sock.send_05_res_msg(self.local_ip, sender_ip)
+                    # self.sock.send_05_res_msg(self.local_ip, sender_ip)
+                    print('0x05 response')
                 elif msg_op == chr(0x07):
-                    self.sock.send_07_res_msg(self.local_ip, sender_ip)
+                    # self.sock.send_07_res_msg(self.local_ip, sender_ip)
+                    print('0x07 response')
                 elif msg_op == chr(0x0C):
-                    self.sock.send_0C_res_msg(self.local_ip, sender_ip)
+                    # self.device_sync(msg_op, d_recv_msg)
+                    # self.sock.send_0C_res_msg(self.local_ip, sender_ip)
+                    print('0x0C response')
                 elif msg_op == chr(0x0D):
-                    self.sock.send_0D_res_msg(self.local_ip, sender_ip)
+                    # self.sock.send_0D_res_msg(self.local_ip, sender_ip)
+                    print('0x0D response')
                 elif msg_op == chr(0x0E):
-                    self.sock.send_0E_res_msg(self.local_ip, sender_ip)
+                    # self.sock.send_0E_res_msg(self.local_ip, sender_ip)
+                    print('0x0E response')
                 elif msg_op == chr(0x0F):
-                    index = d_recv_msg[44]
-                    self.sock.send_0F_res_msg(self.local_ip, sender_ip, index)
+                    # index = int(ord(d_recv_msg[44]))
+                    # self.sock.send_0F_res_msg(self.local_ip, sender_ip, index)
+                    print('0x0F response')
                 elif msg_op == chr(0x11):
-                    request_time = time.time()
-                    self.sock.send_11_res_msg(self.local_ip, sender_ip, self.connect_time, request_time)
+                    # request_time = time.time()
+                    # self.sock.send_11_res_msg(self.local_ip, sender_ip, self.connect_time, request_time)
+                    print('0x11 response')
                 elif msg_op == chr(0x13):
-                    self.sock.send_13_res_msg(self.local_ip, sender_ip, d_recv_msg)
+                    # self.sock.send_13_res_msg(self.local_ip, sender_ip, d_recv_msg)
+                    print('0x13 response')
                 elif msg_op == chr(0x15):
-                    self.sock.send_15_res_msg(self.local_ip, sender_ip)
+                    # self.sock.send_15_res_msg(self.local_ip, sender_ip)
+                    print('0x15 response')
                 elif msg_op == chr(0x16):
-                    self.sock.send_16_res_msg(self.local_ip, sender_ip)
+                    # self.sock.send_16_res_msg(self.local_ip, sender_ip)
+                    print('0x16 response')
                 elif msg_op == chr(0x17):
-                    self.sock.send_17_res_msg(self.local_ip, sender_ip)
+                    # self.sock.send_17_res_msg(self.local_ip, sender_ip)
+                    print('0x17 response')
                 elif msg_op == chr(0x18):
-                    self.sock.send_18_res_msg(self.local_ip, sender_ip)
+                    # self.sock.send_18_res_msg(self.local_ip, sender_ip)
+                    print('0x18 response')
                 elif msg_op == chr(0x19):
-                    self.sock.send_19_res_msg(self.local_ip, sender_ip)
+                    # self.sock.send_19_res_msg(self.local_ip, sender_ip)
+                    print('0x19 response')
                 elif msg_op == chr(0x1E):
-                    self.sock.send_1E_res_msg(self.local_ip, sender_ip)
+                    # self.sock.send_1E_res_msg(self.local_ip, sender_ip)
+                    print('0x1E response')
             else:
                 print("TX_msg: /", recv_msg.decode('utf-16'), "/")
     # endregion
 
-    def device_sync(self, msg):
-        self.frame_number_set = msg[44]
+    def device_sync(self, op, msg):
+        if op == chr(0x01):
+            self.frame_number_set = msg[44]
+        elif op == chr(0x0C):
+            self.lane_num = 2
+            self.collect_cycle = 30
+            self.category_num = 10
+            # 이외의 설정값 등 리셋
+
+
 
     # region test send msg
     def op_FF_btn_click(self):
+        print("---------------------------------------------------------------------------")
         print("FF btn_click")
         self.sock.send_FF_msg()
 
     def op_FE_btn_click(self):
+        print("---------------------------------------------------------------------------")
         print("FE btn_click")
-        self.sock.send_FE_msg()
+        self.sock.send_FE_res_msg()
 
     def op_01_btn_click(self):
+        print("---------------------------------------------------------------------------")
         print("01 btn_click")
         self.sock.send_01_msg()
 
     def op_04_btn_click(self):
+        print("---------------------------------------------------------------------------")
         print("04 btn_click")
         self.sock.send_04_msg()
 
     def op_05_btn_click(self):
+        print("---------------------------------------------------------------------------")
         print("05 btn_click")
         self.sock.send_05_msg()
 
     def op_07_btn_click(self):
+        print("---------------------------------------------------------------------------")
         print("07 btn_click")
         self.sock.send_07_msg()
 
     def op_0C_btn_click(self):
+        print("---------------------------------------------------------------------------")
         print("0C btn_click")
         self.sock.send_0C_msg()
 
     def op_0D_btn_click(self):
+        print("---------------------------------------------------------------------------")
         print("0D btn_click")
         self.sock.send_0D_msg()
 
     def op_0E_btn_click(self):
+        print("---------------------------------------------------------------------------")
         print("0E btn_click")
         self.sock.send_0E_msg()
 
     def op_0F_btn_click(self):
+        print("---------------------------------------------------------------------------")
         print("0F btn_click")
         self.sock.send_0F_msg()
 
     def op_11_btn_click(self):
+        print("---------------------------------------------------------------------------")
         print("11 btn_click")
         self.sock.send_11_msg()
 
     def op_12_btn_click(self):
+        print("---------------------------------------------------------------------------")
         print("12 btn_click")
-        self.sock.send_12_msg()
+        # self.sock.send_12_msg()
 
     def op_13_btn_click(self):
+        print("---------------------------------------------------------------------------")
         print("13 btn_click")
         self.sock.send_13_msg()
 
     def op_15_btn_click(self):
+        print("---------------------------------------------------------------------------")
         print("15 btn_click")
         self.sock.send_15_msg()
 
     def op_16_btn_click(self):
+        print("---------------------------------------------------------------------------")
         print("16 btn_click")
         self.sock.send_16_msg()
 
     def op_17_btn_click(self):
+        print("---------------------------------------------------------------------------")
         print("17 btn_click")
         self.sock.send_17_msg()
 
     def op_18_btn_click(self):
+        print("---------------------------------------------------------------------------")
         print("18 btn_click")
         self.sock.send_18_msg()
 
     def op_19_btn_click(self):
+        print("---------------------------------------------------------------------------")
         print("19 btn_click")
 
     def op_1E_btn_click(self):
+        print("---------------------------------------------------------------------------")
         print("1E btn_click")
         self.sock.send_1E_msg()
 
