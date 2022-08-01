@@ -121,7 +121,7 @@ class main_function(QWidget):
 
             # region test btn true
             self.ui.op_FF_btn.setEnabled(True)
-            self.ui.op_FE_btn.setEnabled(True)
+            self.ui.op_FE_btn.setEnabled(False)
             self.ui.op_01_btn.setEnabled(True)
             self.ui.op_04_btn.setEnabled(True)
             self.ui.op_05_btn.setEnabled(True)
@@ -138,7 +138,7 @@ class main_function(QWidget):
             self.ui.op_16_btn.setEnabled(True)
             self.ui.op_17_btn.setEnabled(True)
             self.ui.op_18_btn.setEnabled(True)
-            self.ui.op_19_btn.setEnabled(True)
+            self.ui.op_19_btn.setEnabled(False)
             self.ui.op_1E_btn.setEnabled(True)
             # endregion
 
