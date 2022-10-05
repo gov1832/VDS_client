@@ -4,6 +4,9 @@ from PyQt5.QtWidgets import *
 import time
 from multiprocessing import Process
 import threading
+import cv2
+import numpy as np
+import base64
 
 from db import DB_function
 from Socket import Socket_function
@@ -36,7 +39,8 @@ class main_function(QWidget):
 
     def value_setting(self):
         self.local_ip = '123.456.789.123'
-        self.server_ip = '127.000.000.001'
+        # self.server_ip = '127.000.000.001'
+        self.server_ip = '192.168.0.7'
         self.lane_num = 2
         self.collect_cycle = 30
         self.category_num = 10
@@ -102,7 +106,7 @@ class main_function(QWidget):
 
 
     def test_btn_click(self):
-        self.sock.socket_send_msg("/end")
+        self.sock.socket_close()
 
     # region btn click function
     def socket_connect_btn_click(self):
@@ -143,7 +147,7 @@ class main_function(QWidget):
             # endregion
 
             # read 스레드 시작 while
-            t = threading.Thread(target=self.read_socket_msg, args=())
+            t = threading.Thread(target=self.read_socket_msg, args=(), daemon=True)
             t.start()
             # read_socket = Process(target=self.read_socket_msg, args=())
             # read_socket.start()
@@ -171,6 +175,7 @@ class main_function(QWidget):
         #     print(i, "   ", d_recv_msg[i])
         # print(msg_op)
         if len(d_recv_msg) > 40:
+            print("[msg len] : " + str(len(d_recv_msg)))
             # print("recv_msg: ", end=' ')
             # for data in d_recv_msg:
             #     print(hex(ord(data)), end='/')
@@ -182,12 +187,13 @@ class main_function(QWidget):
 
             # 수신메시지의 목적지IP == local IP
             if destination_ip == self.local_ip:
-                print("RX_msg: /", recv_msg.decode('utf-16'), "/")
+                # print("RX_msg: /", recv_msg.decode('utf-16'), "/")
                 if msg_op == chr(0xFF):
                     # self.sock.send_FF_res_msg(self.local_ip, sender_ip)
                     # self.connect_time = time.time()
                     print('0xFF response')
                 elif msg_op == chr(0xFE):
+                    print("FE")
                     self.sock.send_FE_msg(self.local_ip, sender_ip)
                 elif msg_op == chr(0x01):
                     # self.device_sync(msg_op, d_recv_msg)
@@ -231,6 +237,33 @@ class main_function(QWidget):
                     print('0x16 response')
                 elif msg_op == chr(0x17):
                     # self.sock.send_17_res_msg(self.local_ip, sender_ip)
+                    sender_ip = d_recv_msg[0:15]
+                    destination_ip = d_recv_msg[16:31]
+                    controller = d_recv_msg[32:39]
+                    total_length = (ord(d_recv_msg[39]) << 24) + (ord(d_recv_msg[40]) << 16) + (ord(d_recv_msg[41]) << 8) + ord(
+                        d_recv_msg[42])
+                    opcode = d_recv_msg[43]
+                    if opcode == chr(0x17):
+                        ack = d_recv_msg[44]
+                        data_field = d_recv_msg[45:]
+                        img_size = (ord(data_field[0]) << 24) + (ord(data_field[1]) << 16) + (ord(data_field[2]) << 8) + ord(data_field[3])
+                        img_temp = data_field[4:]
+                        img_data = img_temp + "=" * (4-len(img_temp) % 4)
+
+
+                        data = np.frombuffer(base64.b64decode(img_data), np.uint8)
+                        img = cv2.imdecode(data, 1)
+
+                        self.server_ip = sender_ip
+
+                        # print('sender', sender_ip, 'destination', destination_ip, 'controller', controller)
+                        print('[total length] : ', total_length)
+                        # print('opcode', opcode)
+                        print('[img_size] : ', img_size)
+
+                        cv2.imshow("image", img)
+                        cv2.waitKey(0)
+                        cv2.destroyAllWindows()
                     print('0x17 response')
                 elif msg_op == chr(0x18):
                     # self.sock.send_18_res_msg(self.local_ip, sender_ip)
